@@ -1,0 +1,13 @@
+{
+  "name": "借地権の目安査定",
+  "version": "1.0.0",
+  "download_url": "https://raw.githubusercontent.com/yoshimucom-gif/shakuchi-satei-plugin/main/shakuchi-satei.zip",
+  "requires": "5.8",
+  "tested": "6.7",
+  "requires_php": "7.4",
+  "author": "ミカタ株式会社",
+  "homepage": "https://github.com/yoshimucom-gif/shakuchi-satei-plugin",
+  "sections": {
+    "changelog": "1.0.0\n・借地権の目安査定フォームを公開（目安額＝更地価格×借地権割合×掛け率70%）"
+  }
+}
