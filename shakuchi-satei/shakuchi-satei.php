@@ -2,7 +2,7 @@
 /**
  * Plugin Name: 借地権の目安査定
  * Description: 所在地・土地の面積・借地権割合と連絡先を受け付け、その場で借地権の売却価格の目安を返すフォームです。目安額＝土地の取引価格の中央値（国交省 不動産情報ライブラリ）×面積×借地権割合×掛け率。申し込みは管理画面に保存し、担当者へ通知、申込者へ目安額つきの受付メールを送ります。ショートコード [shakuchi_satei]。
- * Version: 1.0.0
+ * Version: 1.1.0
  * Author: ミカタ株式会社
  * License: GPLv2 or later
  * Text Domain: shakuchi-satei
@@ -19,7 +19,7 @@
 
 if (!defined('ABSPATH')) exit;
 
-define('SSA_VER', '1.0.0');
+define('SSA_VER', '1.1.0');
 define('SSA_DB_VER', '1');
 define('SSA_OPT', 'ssa_options');
 define('SSA_DIR', plugin_dir_path(__FILE__));
@@ -473,61 +473,75 @@ function ssa_shortcode($atts = array()) {
     ob_start(); ?>
 <div class="ssa" id="<?php echo esc_attr($id); ?>" style="--ssa-accent:<?php echo esc_attr($o['accent']); ?>;--ssa-button:<?php echo esc_attr($o['button']); ?>">
   <form class="ssa-form" novalidate>
-    <ol class="ssa-steps"><li class="is-on">1 借地のこと</li><li>2 ご連絡先</li><li>3 目安の金額</li></ol>
+    <div class="ssa-progress" aria-hidden="true"><div class="ssa-progress-bar"></div></div>
+    <p class="ssa-progress-text"><span class="ssa-progress-now">1</span> / 6</p>
 
     <fieldset class="ssa-step" data-step="1">
-      <div class="ssa-row">
-        <label class="ssa-label"><span class="ssa-req">必須</span>借地の所在地</label>
-        <div class="ssa-addr">
-          <select name="pref" required><option value="">都道府県</option>
-            <?php foreach ($d['prefs'] as $c => $nm) : ?><option value="<?php echo esc_attr($c); ?>"<?php selected($c, '13'); ?>><?php echo esc_html($nm); ?></option><?php endforeach; ?>
-          </select>
-          <select name="city" required><option value="">市区町村</option></select>
-          <input type="text" name="town" list="<?php echo esc_attr($id); ?>-towns" placeholder="町名（例：豪徳寺2丁目）" autocomplete="off">
-          <datalist id="<?php echo esc_attr($id); ?>-towns"></datalist>
-        </div>
+      <legend class="ssa-q">借地はどこにありますか？</legend>
+      <div class="ssa-addr">
+        <select name="pref" required aria-label="都道府県"><option value="">都道府県</option>
+          <?php foreach ($d['prefs'] as $c => $nm) : ?><option value="<?php echo esc_attr($c); ?>"<?php selected($c, '13'); ?>><?php echo esc_html($nm); ?></option><?php endforeach; ?>
+        </select>
+        <select name="city" required aria-label="市区町村"><option value="">市区町村</option></select>
+        <input type="text" name="town" list="<?php echo esc_attr($id); ?>-towns" placeholder="町名（例：豪徳寺2丁目）※わかれば" autocomplete="off" aria-label="町名">
+        <datalist id="<?php echo esc_attr($id); ?>-towns"></datalist>
       </div>
-      <div class="ssa-row">
-        <label class="ssa-label"><span class="ssa-req">必須</span>土地の面積</label>
-        <div class="ssa-area"><input type="text" name="area" inputmode="decimal" placeholder="例：100" required>
-          <select name="unit"><option value="m2">㎡</option><option value="tsubo">坪</option></select></div>
-        <p class="ssa-hint">借地契約書や固定資産税の通知書（土地）に書かれています。だいたいの広さで大丈夫です。</p>
-      </div>
-      <div class="ssa-row">
-        <label class="ssa-label"><span class="ssa-req">必須</span>借地権割合</label>
-        <div class="ssa-tiles">
-          <?php foreach (ssa_ratio_options() as $k => $r) : ?>
-            <label class="ssa-tile<?php echo $k === 'unknown' ? ' is-wide' : ''; ?>"><input type="radio" name="ratio" value="<?php echo esc_attr($k); ?>"<?php checked($k, 'unknown'); ?>><span><?php echo esc_html($r[0]); ?></span></label>
-          <?php endforeach; ?>
-        </div>
-        <p class="ssa-hint">国税庁の<a href="https://www.rosenka.nta.go.jp/" target="_blank" rel="noopener" class="ssa-ext">路線価図</a>で、土地の前の道路の数字の後ろにあるアルファベットです（例「350C」ならC）。</p>
-      </div>
-      <div class="ssa-row">
-        <label class="ssa-label"><span class="ssa-req">必須</span>地主</label>
-        <div class="ssa-tiles">
-          <?php foreach (ssa_jinushi_options() as $i => $v) : ?>
-            <label class="ssa-tile"><input type="radio" name="jinushi" value="<?php echo esc_attr($v); ?>"<?php checked($i, 0); ?>><span><?php echo esc_html($v); ?></span></label>
-          <?php endforeach; ?>
-        </div>
-      </div>
+      <p class="ssa-hint">都道府県と市区町村は必須です。町名まで入れると、近くの取引事例で計算します。</p>
       <p class="ssa-errors" role="alert" hidden></p>
-      <div class="ssa-actions"><button type="button" class="ssa-btn ssa-next">次へ（ご連絡先の入力）</button></div>
+      <div class="ssa-actions"><button type="button" class="ssa-btn ssa-next">次へ</button></div>
     </fieldset>
 
     <fieldset class="ssa-step" data-step="2" hidden>
+      <legend class="ssa-q">土地の広さはどのくらいですか？</legend>
+      <div class="ssa-area"><input type="text" name="area" inputmode="decimal" placeholder="例：100" required aria-label="土地の面積">
+        <select name="unit" aria-label="単位"><option value="m2">㎡</option><option value="tsubo">坪</option></select></div>
+      <p class="ssa-hint">借地契約書や固定資産税の通知書（土地）に書かれています。だいたいの広さで大丈夫です。</p>
+      <p class="ssa-errors" role="alert" hidden></p>
+      <div class="ssa-actions"><button type="button" class="ssa-btn is-ghost ssa-back">戻る</button><button type="button" class="ssa-btn ssa-next">次へ</button></div>
+    </fieldset>
+
+    <fieldset class="ssa-step" data-step="3" data-auto="1" hidden>
+      <legend class="ssa-q">借地権割合はわかりますか？</legend>
+      <div class="ssa-tiles">
+        <?php foreach (ssa_ratio_options() as $k => $r) : ?>
+          <label class="ssa-tile<?php echo $k === 'unknown' ? ' is-wide' : ''; ?>"><input type="radio" name="ratio" value="<?php echo esc_attr($k); ?>"><span><?php echo esc_html($r[0]); ?></span></label>
+        <?php endforeach; ?>
+      </div>
+      <p class="ssa-hint">国税庁の<a href="https://www.rosenka.nta.go.jp/" target="_blank" rel="noopener" class="ssa-ext">路線価図</a>で、土地の前の道路の数字の後ろにあるアルファベットです（例「350C」ならC）。わからなければ「わからない」を選んでください。</p>
+      <p class="ssa-errors" role="alert" hidden></p>
+      <div class="ssa-actions"><button type="button" class="ssa-btn is-ghost ssa-back">戻る</button></div>
+    </fieldset>
+
+    <fieldset class="ssa-step" data-step="4" data-auto="1" hidden>
+      <legend class="ssa-q">借地の地主はどなたですか？</legend>
+      <div class="ssa-tiles is-list">
+        <?php foreach (ssa_jinushi_options() as $v) : ?>
+          <label class="ssa-tile"><input type="radio" name="jinushi" value="<?php echo esc_attr($v); ?>"><span><?php echo esc_html($v); ?></span></label>
+        <?php endforeach; ?>
+      </div>
+      <p class="ssa-errors" role="alert" hidden></p>
+      <div class="ssa-actions"><button type="button" class="ssa-btn is-ghost ssa-back">戻る</button></div>
+    </fieldset>
+
+    <fieldset class="ssa-step" data-step="5" data-auto="1" hidden>
+      <legend class="ssa-q">どのようにお考えですか？</legend>
+      <div class="ssa-tiles is-list">
+        <?php foreach (ssa_kibou_options() as $v) : ?>
+          <label class="ssa-tile"><input type="radio" name="kibou" value="<?php echo esc_attr($v); ?>"><span><?php echo esc_html($v); ?></span></label>
+        <?php endforeach; ?>
+      </div>
+      <p class="ssa-errors" role="alert" hidden></p>
+      <div class="ssa-actions"><button type="button" class="ssa-btn is-ghost ssa-back">戻る</button></div>
+    </fieldset>
+
+    <fieldset class="ssa-step" data-step="6" hidden>
+      <legend class="ssa-q">目安の金額をお送りするご連絡先</legend>
+      <p class="ssa-lead">入力が終わると、この画面に目安の金額が表示されます。</p>
       <div class="ssa-row"><label class="ssa-label"><span class="ssa-req">必須</span>お名前</label><input type="text" name="name" autocomplete="name" placeholder="鈴木 花子" required></div>
       <div class="ssa-row"><label class="ssa-label"><span class="ssa-req">必須</span>電話番号</label><input type="tel" name="tel" autocomplete="tel" placeholder="090-0000-0000" required></div>
       <div class="ssa-row"><label class="ssa-label"><span class="ssa-req">必須</span>メールアドレス</label><input type="email" name="email" autocomplete="email" placeholder="xxxxx@gmail.com" required>
         <p class="ssa-hint">目安の金額をこのアドレスにもお送りします。</p></div>
-      <div class="ssa-row">
-        <label class="ssa-label"><span class="ssa-req">必須</span>ご希望</label>
-        <div class="ssa-tiles">
-          <?php foreach (ssa_kibou_options() as $i => $v) : ?>
-            <label class="ssa-tile"><input type="radio" name="kibou" value="<?php echo esc_attr($v); ?>"<?php checked($i, 0); ?>><span><?php echo esc_html($v); ?></span></label>
-          <?php endforeach; ?>
-        </div>
-      </div>
-      <div class="ssa-row"><label class="ssa-label"><span class="ssa-opt">任意</span>ご相談内容</label><textarea name="note" rows="4" placeholder="地主とのやり取りの状況や、連絡のつきやすい時間帯などがあればご記入ください。"></textarea></div>
+      <div class="ssa-row"><label class="ssa-label"><span class="ssa-opt">任意</span>ご相談内容</label><textarea name="note" rows="3" placeholder="地主とのやり取りの状況や、連絡のつきやすい時間帯などがあればご記入ください。"></textarea></div>
       <div class="ssa-hp" aria-hidden="true"><input type="text" name="ssa_website" tabindex="-1" autocomplete="off"></div>
       <label class="ssa-agree"><input type="checkbox" name="agree" value="1"><span><a href="<?php echo esc_url($o['privacy_url']); ?>" target="_blank" rel="noopener">個人情報の取り扱い</a>に同意し、<?php echo esc_html(preg_replace('/（.*$/u', '', $o['company'])); ?>から査定のご連絡を受けることに同意します</span></label>
       <p class="ssa-errors" role="alert" hidden></p>
