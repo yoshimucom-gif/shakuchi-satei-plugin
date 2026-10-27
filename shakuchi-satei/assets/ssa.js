@@ -15,6 +15,11 @@
     if (el.type === 'checkbox') return el.checked ? el.value : '';
     return (el.value || '').trim();
   }
+  // パーマリンクが ?p= 形式のサイトでは rest_url が「…?rest_route=/ssa/v1/」になるので、2つ目の?は&にする
+  function api(path) {
+    var base = CFG.rest || '/wp-json/ssa/v1/';
+    return base + (base.indexOf('?') >= 0 ? path.replace('?', '&') : path);
+  }
   function hankaku(s) {
     return String(s || '').replace(/[０-９．，]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) - 0xFEE0); });
   }
@@ -29,7 +34,7 @@
     var sel = form.elements.city;
     sel.innerHTML = '<option value="">市区町村</option>';
     if (!pref) return;
-    fetch(CFG.rest + 'cities?pref=' + encodeURIComponent(pref), { credentials: 'same-origin' })
+    fetch(api('cities?pref=' + encodeURIComponent(pref)), { credentials: 'same-origin' })
       .then(function (r) { return r.json(); })
       .then(function (list) {
         (list || []).forEach(function (c) {
@@ -47,7 +52,7 @@
     if (!dl) return;
     dl.innerHTML = '';
     if (!CFG.auto || !city) return;
-    fetch(CFG.rest + 'towns?city=' + encodeURIComponent(city), { credentials: 'same-origin' })
+    fetch(api('towns?city=' + encodeURIComponent(city)), { credentials: 'same-origin' })
       .then(function (r) { return r.json(); })
       .then(function (list) {
         (list || []).forEach(function (t) { var o = document.createElement('option'); o.value = t; dl.appendChild(o); });
