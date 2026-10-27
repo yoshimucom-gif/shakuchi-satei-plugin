@@ -2,7 +2,7 @@
 /**
  * Plugin Name: 借地権の目安査定
  * Description: 所在地・土地の面積・借地権割合と連絡先を受け付け、その場で借地権の売却価格の目安を返すフォームです。目安額＝土地の取引価格の中央値（国交省 不動産情報ライブラリ）×面積×借地権割合×掛け率。申し込みは管理画面に保存し、担当者へ通知、申込者へ目安額つきの受付メールを送ります。ショートコード [shakuchi_satei]。
- * Version: 1.1.1
+ * Version: 1.1.2
  * Author: ミカタ株式会社
  * License: GPLv2 or later
  * Text Domain: shakuchi-satei
@@ -19,7 +19,7 @@
 
 if (!defined('ABSPATH')) exit;
 
-define('SSA_VER', '1.1.1');
+define('SSA_VER', '1.1.2');
 define('SSA_DB_VER', '1');
 define('SSA_OPT', 'ssa_options');
 define('SSA_DIR', plugin_dir_path(__FILE__));
@@ -536,19 +536,19 @@ function ssa_shortcode($atts = array()) {
     </fieldset>
 
     <fieldset class="ssa-step" data-step="6" hidden>
-      <legend class="ssa-q">目安の金額をお送りするご連絡先</legend>
-      <p class="ssa-lead">入力が終わると、この画面に目安の金額が表示されます。</p>
+      <legend class="ssa-q">査定のご連絡先</legend>
+      <p class="ssa-lead">送信すると、担当者から無料査定のご連絡をします。土地の取引事例から計算した目安の金額も、送信のあとこの画面でご確認いただけます。</p>
       <div class="ssa-row"><label class="ssa-label"><span class="ssa-req">必須</span>お名前</label><input type="text" name="name" autocomplete="name" placeholder="鈴木 花子" required></div>
       <div class="ssa-row"><label class="ssa-label"><span class="ssa-req">必須</span>電話番号</label><input type="tel" name="tel" autocomplete="tel" placeholder="090-0000-0000" required></div>
       <div class="ssa-row"><label class="ssa-label"><span class="ssa-req">必須</span>メールアドレス</label><input type="email" name="email" autocomplete="email" placeholder="xxxxx@gmail.com" required>
-        <p class="ssa-hint">目安の金額をこのアドレスにもお送りします。</p></div>
+        <p class="ssa-hint">受付の内容と目安の金額を、このアドレスにお送りします。</p></div>
       <div class="ssa-row"><label class="ssa-label"><span class="ssa-opt">任意</span>ご相談内容</label><textarea name="note" rows="3" placeholder="地主とのやり取りの状況や、連絡のつきやすい時間帯などがあればご記入ください。"></textarea></div>
       <div class="ssa-hp" aria-hidden="true"><input type="text" name="ssa_website" tabindex="-1" autocomplete="off"></div>
       <label class="ssa-agree"><input type="checkbox" name="agree" value="1"><span><a href="<?php echo esc_url($o['privacy_url']); ?>" target="_blank" rel="noopener">個人情報の取り扱い</a>に同意し、<?php echo esc_html(preg_replace('/（.*$/u', '', $o['company'])); ?>から査定のご連絡を受けることに同意します</span></label>
       <p class="ssa-errors" role="alert" hidden></p>
       <div class="ssa-actions">
         <button type="button" class="ssa-btn is-ghost ssa-back">戻る</button>
-        <button type="submit" class="ssa-btn ssa-submit">目安の金額を見る</button>
+        <button type="submit" class="ssa-btn ssa-submit">無料査定を申し込む</button>
       </div>
     </fieldset>
   </form>

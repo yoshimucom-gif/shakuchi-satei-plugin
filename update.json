@@ -1,6 +1,6 @@
 {
   "name": "借地権の目安査定",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "download_url": "https://raw.githubusercontent.com/yoshimucom-gif/shakuchi-satei-plugin/main/shakuchi-satei.zip",
   "requires": "5.8",
   "tested": "6.7",
@@ -8,6 +8,6 @@
   "author": "ミカタ株式会社",
   "homepage": "https://github.com/yoshimucom-gif/shakuchi-satei-plugin",
   "sections": {
-    "changelog": "1.1.1\n・サブディレクトリ型のステージング（パーマリンクが ?p= 形式）のときだけ、本文・ボタン・ウィジェット・メニューの相対リンク（/lp/satei/ など）を表示の直前にステージングのURLへ読み替える。本文は書き換えない。本番では何もしない"
+    "changelog": "1.1.2\n・申し込みフォームの言い回しを無料査定の申し込みに合わせた（送信ボタン「無料査定を申し込む」、最後のステップ「査定のご連絡先」）。目安の金額は送信後に表示されることを補足で伝える"
   }
 }

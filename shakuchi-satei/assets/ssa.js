@@ -161,8 +161,8 @@
       }
       showErrors(box, []);
       var btn = $(root, '.ssa-submit');
-      btn.disabled = true; btn.textContent = '計算しています…';
-      var reset = function () { btn.disabled = false; btn.textContent = '目安の金額を見る'; };
+      btn.disabled = true; btn.textContent = '送信しています…';
+      var reset = function () { btn.disabled = false; btn.textContent = '無料査定を申し込む'; };
       var body0 = new FormData(); body0.append('action', 'ssa_nonce');
       fetch(CFG.ajax, { method: 'POST', body: body0, credentials: 'same-origin' })
         .then(function (r) { return r.json(); })
