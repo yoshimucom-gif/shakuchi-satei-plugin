@@ -1,6 +1,6 @@
 {
   "name": "借地権の目安査定",
-  "version": "1.1.2",
+  "version": "1.1.3",
   "download_url": "https://raw.githubusercontent.com/yoshimucom-gif/shakuchi-satei-plugin/main/shakuchi-satei.zip",
   "requires": "5.8",
   "tested": "6.7",
@@ -8,6 +8,6 @@
   "author": "ミカタ株式会社",
   "homepage": "https://github.com/yoshimucom-gif/shakuchi-satei-plugin",
   "sections": {
-    "changelog": "1.1.2\n・申し込みフォームの言い回しを無料査定の申し込みに合わせた（送信ボタン「無料査定を申し込む」、最後のステップ「査定のご連絡先」）。目安の金額は送信後に表示されることを補足で伝える"
+    "changelog": "1.1.3\n・設定「目安額の表示」を追加。外すと査定依頼だけを受けるフォームになり、送信後の画面と受付メールに目安額を出さない（目安額は担当者あての通知メールにだけ載る）。目安は計算ツール（簡易査定）のページで見せ、フォームは査定依頼に絞る構成のため"
   }
 }

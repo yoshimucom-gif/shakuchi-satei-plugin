@@ -110,7 +110,13 @@
   function showResult(root, res) {
     var box = $(root, '.ssa-result');
     var v = $(root, '.ssa-result-value'), f = $(root, '.ssa-result-formula'), b = $(root, '.ssa-result-basis');
-    if (res.estimate) {
+    if (res.mode === 'request') {
+      // 査定依頼だけのフォーム：目安額は出さず、受付の完了だけを伝える
+      $(root, '.ssa-result-label').textContent = '無料査定のお申し込みを受け付けました';
+      v.textContent = 'ありがとうございました';
+      f.textContent = ''; b.textContent = '';
+      var note = $(root, '.ssa-result-note'); if (note) note.hidden = true;
+    } else if (res.estimate) {
       v.textContent = res.estimate.text;
       f.textContent = '更地価格の目安 ' + res.estimate.sarachi + ' × 借地権割合 ' + res.estimate.ratio + ' × ' + res.estimate.coef;
       b.textContent = '土地の価格は、国土交通省「不動産情報ライブラリ」の' + res.basis.scope + 'の土地の取引事例（' +

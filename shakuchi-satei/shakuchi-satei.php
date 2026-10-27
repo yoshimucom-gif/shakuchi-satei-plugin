@@ -2,7 +2,7 @@
 /**
  * Plugin Name: 借地権の目安査定
  * Description: 所在地・土地の面積・借地権割合と連絡先を受け付け、その場で借地権の売却価格の目安を返すフォームです。目安額＝土地の取引価格の中央値（国交省 不動産情報ライブラリ）×面積×借地権割合×掛け率。申し込みは管理画面に保存し、担当者へ通知、申込者へ目安額つきの受付メールを送ります。ショートコード [shakuchi_satei]。
- * Version: 1.1.2
+ * Version: 1.1.3
  * Author: ミカタ株式会社
  * License: GPLv2 or later
  * Text Domain: shakuchi-satei
@@ -19,7 +19,7 @@
 
 if (!defined('ABSPATH')) exit;
 
-define('SSA_VER', '1.1.2');
+define('SSA_VER', '1.1.3');
 define('SSA_DB_VER', '1');
 define('SSA_OPT', 'ssa_options');
 define('SSA_DIR', plugin_dir_path(__FILE__));
@@ -54,6 +54,8 @@ function ssa_defaults() {
         'button'       => '#8a6f12',
         'autoreply'    => '1',
         'notify_on'    => '1',
+        // 申込者に目安額を見せるか。'' にすると「査定依頼だけを受けるフォーム」になる（目安額は担当者あての通知にだけ載る）
+        'show_estimate' => '1',
     );
 }
 
@@ -122,6 +124,7 @@ function ssa_sanitize_options($in) {
     }
     $out['autoreply'] = !empty($in['autoreply']) ? '1' : '';
     $out['notify_on'] = !empty($in['notify_on']) ? '1' : '';
+    $out['show_estimate'] = !empty($in['show_estimate']) ? '1' : '';
     return $out;
 }
 
@@ -375,7 +378,8 @@ function ssa_submit() {
 
     $mail_ok = true;
     if (ssa_opt('autoreply')) {
-        $mail_ok = wp_mail($email, '【' . $site . '】借地権の目安査定のお申し込みを受け付けました', ssa_mail_customer($ctx), $headers);
+        $subj_c = ssa_opt('show_estimate') ? '借地権の目安査定のお申し込みを受け付けました' : '借地権の無料査定のお申し込みを受け付けました';
+        $mail_ok = wp_mail($email, '【' . $site . '】' . $subj_c, ssa_mail_customer($ctx), $headers);
     }
     if (ssa_opt('notify_on')) {
         $subj = '【借地権の目安査定】' . $name . '様 / ' . $pref . $city . $town . ($est ? ' / 目安 ' . ssa_yen_range($est['lo'], $est['hi']) : '');
@@ -383,6 +387,10 @@ function ssa_submit() {
         foreach (ssa_notify_recipients() as $to) wp_mail($to, $subj, ssa_mail_admin($ctx), $h);   // 宛先どうしが見えないよう1通ずつ
     }
 
+    if (!ssa_opt('show_estimate')) {   // 査定依頼だけのフォーム：申込者には目安を返さない
+        wp_send_json(array('ok' => true, 'mode' => 'request', 'mail_ok' => (bool) $mail_ok, 'name' => $name, 'email' => $email,
+            'estimate' => null, 'basis' => null, 'reason' => '', 'company' => ssa_opt('company')));
+    }
     wp_send_json(array(
         'ok' => true, 'mail_ok' => (bool) $mail_ok, 'name' => $name, 'email' => $email,
         'estimate' => $est ? array(
@@ -412,14 +420,19 @@ function ssa_disclaimer($ctx) {
 
 function ssa_mail_customer($ctx) {
     $b  = $ctx['name'] . " 様\n\n";
-    $b .= ssa_site_name() . "です。借地権の目安査定のお申し込みを受け付けました。\n\n";
-    $b .= "■ 売却価格の目安\n";
-    if ($ctx['est']) {
-        $b .= ssa_yen_range($ctx['est']['lo'], $ctx['est']['hi']) . "\n";
-        $b .= '（更地価格の目安 ' . ssa_yen($ctx['est']['sarachi']) . ' × 借地権割合 ' . $ctx['est']['ratio_label'] . ' × ' . rtrim(rtrim(number_format($ctx['est']['coef'] * 100, 1), '0'), '.') . "%）\n\n";
-        $b .= ssa_disclaimer($ctx) . "\n\n";
+    if (!ssa_opt('show_estimate')) {
+        // 査定依頼だけのフォーム：受付メールに目安額は載せない
+        $b .= ssa_site_name() . "です。借地権の無料査定のお申し込みを受け付けました。\n\n";
     } else {
-        $b .= $ctx['reason'] . "\n\n";
+        $b .= ssa_site_name() . "です。借地権の目安査定のお申し込みを受け付けました。\n\n";
+        $b .= "■ 売却価格の目安\n";
+        if ($ctx['est']) {
+            $b .= ssa_yen_range($ctx['est']['lo'], $ctx['est']['hi']) . "\n";
+            $b .= '（更地価格の目安 ' . ssa_yen($ctx['est']['sarachi']) . ' × 借地権割合 ' . $ctx['est']['ratio_label'] . ' × ' . rtrim(rtrim(number_format($ctx['est']['coef'] * 100, 1), '0'), '.') . "%）\n\n";
+            $b .= ssa_disclaimer($ctx) . "\n\n";
+        } else {
+            $b .= $ctx['reason'] . "\n\n";
+        }
     }
     $b .= "■ 正式な査定について\n";
     $b .= ssa_opt('company') . "が、借地契約の内容や地主との関係もうかがったうえで、無料で正式な査定をいたします。担当者からご連絡しますので、お待ちください。\n";
@@ -429,8 +442,8 @@ function ssa_mail_customer($ctx) {
 }
 
 function ssa_mail_admin($ctx) {
-    $b  = "借地権の目安査定に申し込みがありました。\n\n";
-    $b .= "■ 目安（申込者にも表示・送信済み）\n" . ($ctx['est'] ? ssa_yen_range($ctx['est']['lo'], $ctx['est']['hi']) . "\n" . $ctx['basis_text'] : $ctx['reason']) . "\n\n";
+    $b  = ssa_opt('show_estimate') ? "借地権の目安査定に申し込みがありました。\n\n" : "借地権の無料査定に申し込みがありました。\n\n";
+    $b .= (ssa_opt('show_estimate') ? "■ 目安（申込者にも表示・送信済み）\n" : "■ 目安（担当者用。申込者には見せていません）\n") . ($ctx['est'] ? ssa_yen_range($ctx['est']['lo'], $ctx['est']['hi']) . "\n" . $ctx['basis_text'] : $ctx['reason']) . "\n\n";
     $b .= "■ 申込内容\n" . ssa_lines($ctx) . "\n\n";
     if ($ctx['page_url']) $b .= "■ 申込ページ\n" . $ctx['page_url'] . "\n\n";
     $b .= "申込一覧：" . admin_url('admin.php?page=shakuchi-satei') . "\n";
@@ -537,11 +550,11 @@ function ssa_shortcode($atts = array()) {
 
     <fieldset class="ssa-step" data-step="6" hidden>
       <legend class="ssa-q">査定のご連絡先</legend>
-      <p class="ssa-lead">送信すると、担当者から無料査定のご連絡をします。土地の取引事例から計算した目安の金額も、送信のあとこの画面でご確認いただけます。</p>
+      <p class="ssa-lead">送信すると、担当者から無料査定のご連絡をします。<?php if ($o['show_estimate']) : ?>土地の取引事例から計算した目安の金額も、送信のあとこの画面でご確認いただけます。<?php endif; ?></p>
       <div class="ssa-row"><label class="ssa-label"><span class="ssa-req">必須</span>お名前</label><input type="text" name="name" autocomplete="name" placeholder="鈴木 花子" required></div>
       <div class="ssa-row"><label class="ssa-label"><span class="ssa-req">必須</span>電話番号</label><input type="tel" name="tel" autocomplete="tel" placeholder="090-0000-0000" required></div>
       <div class="ssa-row"><label class="ssa-label"><span class="ssa-req">必須</span>メールアドレス</label><input type="email" name="email" autocomplete="email" placeholder="xxxxx@gmail.com" required>
-        <p class="ssa-hint">受付の内容と目安の金額を、このアドレスにお送りします。</p></div>
+        <p class="ssa-hint"><?php echo $o['show_estimate'] ? '受付の内容と目安の金額を、このアドレスにお送りします。' : '受付の内容を、このアドレスにお送りします。'; ?></p></div>
       <div class="ssa-row"><label class="ssa-label"><span class="ssa-opt">任意</span>ご相談内容</label><textarea name="note" rows="3" placeholder="地主とのやり取りの状況や、連絡のつきやすい時間帯などがあればご記入ください。"></textarea></div>
       <div class="ssa-hp" aria-hidden="true"><input type="text" name="ssa_website" tabindex="-1" autocomplete="off"></div>
       <label class="ssa-agree"><input type="checkbox" name="agree" value="1"><span><a href="<?php echo esc_url($o['privacy_url']); ?>" target="_blank" rel="noopener">個人情報の取り扱い</a>に同意し、<?php echo esc_html(preg_replace('/（.*$/u', '', $o['company'])); ?>から査定のご連絡を受けることに同意します</span></label>
@@ -649,7 +662,9 @@ function ssa_settings_page() {
         <label><input type="checkbox" name="<?php echo SSA_OPT; ?>[notify_on]" value="1"<?php checked($o['notify_on'], '1'); ?>> 申し込みがあったら通知する</label></td></tr>
       <tr><th>送信元メールアドレス</th><td><input name="<?php echo SSA_OPT; ?>[from_email]" value="<?php echo esc_attr($o['from_email']); ?>" class="regular-text">
         <p class="description">サイトのドメインのアドレスにすると迷惑メールに入りにくくなります。</p></td></tr>
-      <tr><th>受付メール</th><td><label><input type="checkbox" name="<?php echo SSA_OPT; ?>[autoreply]" value="1"<?php checked($o['autoreply'], '1'); ?>> 申込者に目安額つきの受付メールを送る</label></td></tr>
+      <tr><th>受付メール</th><td><label><input type="checkbox" name="<?php echo SSA_OPT; ?>[autoreply]" value="1"<?php checked($o['autoreply'], '1'); ?>> 申込者に受付メールを送る</label></td></tr>
+      <tr><th>目安額の表示</th><td><label><input type="checkbox" name="<?php echo SSA_OPT; ?>[show_estimate]" value="1"<?php checked($o['show_estimate'], '1'); ?>> 送信後の画面と受付メールに目安額を出す</label>
+        <p class="description">外すと、査定依頼だけを受けるフォームになります（目安額は担当者あての通知メールにだけ載ります）。目安は計算ツールのページで見せる構成のときに外します。</p></td></tr>
       <tr><th>サイト名</th><td><input name="<?php echo SSA_OPT; ?>[site_name]" value="<?php echo esc_attr($o['site_name']); ?>" class="regular-text" placeholder="<?php echo esc_attr(get_option('blogname')); ?>"></td></tr>
       <tr><th>査定する会社</th><td><input name="<?php echo SSA_OPT; ?>[company]" value="<?php echo esc_attr($o['company']); ?>" class="large-text">
         <p class="description">正式な査定をする宅地建物取引業者。免許番号まで書いてください。</p></td></tr>
