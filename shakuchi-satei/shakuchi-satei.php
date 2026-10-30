@@ -2,7 +2,7 @@
 /**
  * Plugin Name: 借地権の目安査定
  * Description: 所在地・土地の面積・借地権割合と連絡先を受け付け、その場で借地権の売却価格の目安を返すフォームです。目安額＝土地の取引価格の中央値（国交省 不動産情報ライブラリ）×面積×借地権割合×掛け率。申し込みは管理画面に保存し、担当者へ通知、申込者へ目安額つきの受付メールを送ります。ショートコード [shakuchi_satei]。
- * Version: 1.1.4
+ * Version: 1.1.5
  * Author: ミカタ株式会社
  * License: GPLv2 or later
  * Text Domain: shakuchi-satei
@@ -19,7 +19,7 @@
 
 if (!defined('ABSPATH')) exit;
 
-define('SSA_VER', '1.1.4');
+define('SSA_VER', '1.1.5');
 define('SSA_DB_VER', '1');
 define('SSA_OPT', 'ssa_options');
 define('SSA_DIR', plugin_dir_path(__FILE__));

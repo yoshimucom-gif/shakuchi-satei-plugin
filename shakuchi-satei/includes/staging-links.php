@@ -75,4 +75,14 @@ add_action('init', function () {
         }
         return $atts;
     }, 99);
+    // ヘッダーのボタン（カスタマイザーの diver_header_buttons。テーマが JSON を配列にしてから通すフィルター）
+    add_filter('diver_header_buttons', function ($btns) {
+        if (!is_array($btns)) return $btns;
+        foreach ($btns as $i => $b) {
+            if (empty($b['url'])) continue;
+            $r = ssa_staging_rewrite_links('href="' . $b['url'] . '"');
+            if (preg_match('#href="([^"]*)"#', $r, $m)) $btns[$i]['url'] = html_entity_decode($m[1]);
+        }
+        return $btns;
+    }, 99);
 });
