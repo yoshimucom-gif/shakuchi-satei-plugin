@@ -1,6 +1,6 @@
 {
   "name": "借地権の目安査定",
-  "version": "1.1.6",
+  "version": "1.1.7",
   "download_url": "https://raw.githubusercontent.com/yoshimucom-gif/shakuchi-satei-plugin/main/shakuchi-satei.zip",
   "requires": "5.8",
   "tested": "6.7",
@@ -8,6 +8,6 @@
   "author": "ミカタ株式会社",
   "homepage": "https://github.com/yoshimucom-gif/shakuchi-satei-plugin",
   "sections": {
-    "changelog": "1.1.6\n寺院別の記事は記事の上にアイキャッチを出さない"
+    "changelog": "1.1.7\nスマホの画面下に記事に合わせた相談のバーを固定表示"
   }
 }
