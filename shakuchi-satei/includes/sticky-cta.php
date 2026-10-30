@@ -22,7 +22,8 @@ function ssa_sticky_cta_pattern() {
     }
     if (is_singular('post')) {
         if (has_category(array('ichiran', 'otera'))) {
-            return array('note' => '毎月お寺の借地相談を受けています', 'btns' => array($tel, $soudan), 'key' => 'temple');
+            // お寺の記事の相談先はお寺LPのフォーム（2026-10-30 吉村さん「つなぎ替えて」）
+            return array('note' => '毎月お寺の借地相談を受けています', 'btns' => array($tel, array('label' => '無料で相談する', 'url' => '/lp/otera/#form', 'kind' => 'main')), 'key' => 'temple');
         }
         if (has_category('koushin')) {
             return array('note' => '更新料が相場かどうか目安を出せます', 'btns' => array($calc('更新料を計算', '/keisan-koushinryou/'), $soudan), 'key' => 'koushin');
