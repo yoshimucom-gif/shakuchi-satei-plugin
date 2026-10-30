@@ -75,6 +75,10 @@ add_action('init', function () {
         }
         return $atts;
     }, 99);
+    // ヘッダーの部品（カスタマイザーのヘッダー項目「HTML」に書いた電話・メールのボタンなど）
+    add_filter('diver_header_base_parts', function ($parts) {
+        return is_array($parts) ? array_map('ssa_staging_rewrite_links', $parts) : $parts;
+    }, 99);
     // ヘッダーのボタン（カスタマイザーの diver_header_buttons。テーマが JSON を配列にしてから通すフィルター）
     add_filter('diver_header_buttons', function ($btns) {
         if (!is_array($btns)) return $btns;
