@@ -17,6 +17,11 @@ function ssa_sticky_cta_pattern() {
     $tel = array('label' => '電話する', 'url' => 'tel:0358608391', 'kind' => 'tel');
     $soudan = array('label' => '無料で相談する', 'url' => '/contact-us/', 'kind' => 'main');
     $calc = function ($label, $url) { return array('label' => $label, 'url' => $url, 'kind' => 'sub'); };
+    // LP（投稿タイプ lp）では他のページへ出さない：電話と、LP内のフォーム（#form）だけ
+    //（2026-11-04 吉村さん「LPの癖にほかページに遷移させるんじゃねえよ」）
+    if (is_singular('lp')) {
+        return array('note' => '毎月お寺の借地相談を受けています', 'btns' => array($tel, array('label' => '無料で相談する', 'url' => '#form', 'kind' => 'main')), 'key' => 'lp');
+    }
     if (is_page(array('keisan', 'keisan-koushinryou', 'keisan-shoudakuryou'))) {
         return array('note' => '借地のご相談は無料です', 'btns' => array($tel, $soudan), 'key' => 'tool');
     }
