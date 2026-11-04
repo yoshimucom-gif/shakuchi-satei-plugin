@@ -49,7 +49,10 @@ add_action('wp_footer', function () {
 @media (min-width:768px){
   .ssa-pop:not([hidden]){display:block;position:fixed;right:20px;bottom:20px;z-index:998;width:300px;background:#fff;border-radius:8px;
     box-shadow:0 6px 24px rgba(0,0,0,.22);overflow:hidden;font-size:14px;line-height:1.6;color:#2f3437;animation:ssa-pop-in .35s ease-out}
-  .ssa-pop__head{margin:0;padding:10px 40px 10px 14px;background:#e8730c;color:#fff;font-weight:700;font-size:15px;line-height:1.4}
+  /* テーマの字間（letter-spacing）が効くと見出しの最後の1文字だけ2行目に落ちる（2026-11-04 吉村さん「なんで す だけ2だんめいくかなー」）。
+     字間を戻し、見出しは1行に収める */
+  .ssa-pop,.ssa-pop *{letter-spacing:normal!important}
+  .ssa-pop__head{margin:0;padding:10px 36px 10px 14px;background:#e8730c;color:#fff;font-weight:700;font-size:14px;line-height:1.4;white-space:nowrap}
   .ssa-pop__x{position:absolute;top:5px;right:6px;width:28px;height:28px;padding:0;border:0;background:none;color:#fff;font-size:22px;line-height:28px;cursor:pointer}
   .ssa-pop__body{display:flex;gap:10px;align-items:center;padding:12px 14px 4px}
   .ssa-pop__img{flex:none;width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid #fde3c8}
