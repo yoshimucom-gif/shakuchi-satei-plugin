@@ -10,17 +10,18 @@
 if (!defined('ABSPATH')) exit;
 
 function ssa_corner_popup_pattern() {
-    if (is_admin() || is_singular('lp') || is_page('contact-us')) return null;
+    // お寺の相談ページは 2026-11-10 にLP投稿（/lp/otera/）から固定ページ（/otera-soudan/）へ移した。申し込み先そのものなので出さない
+    if (is_admin() || is_singular('lp') || is_page(array('contact-us', 'otera-soudan'))) return null;
     $temple = (is_singular('post') && has_category(array('ichiran', 'otera'))) || is_category(array('ichiran', 'otera'));
     if ($temple) {
         return array('key' => 'temple', 'head' => '毎月お寺の借地相談を受けています',
             'text' => 'お寺が地主の借地の売却は、地主との交渉から書類の準備までお任せいただけます。',
-            'btn' => 'お寺の借地を相談する', 'url' => '/lp/otera/', 'sub' => null);
+            'btn' => 'お寺の借地を相談する', 'url' => '/otera-soudan/', 'sub' => null);
     }
     return array('key' => 'default', 'head' => '借地のご相談は無料です',
         'text' => '地主との交渉から売却まで、借地の取引100件以上の担当がサポートします。',
         'btn' => '無料で相談する', 'url' => '/contact-us/',
-        'sub' => array('label' => 'お寺が地主の借地はこちら', 'url' => '/lp/otera/'));
+        'sub' => array('label' => 'お寺が地主の借地はこちら', 'url' => '/otera-shakuchi/'));
 }
 
 add_action('wp_footer', function () {
