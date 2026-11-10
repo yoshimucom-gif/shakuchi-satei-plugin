@@ -38,7 +38,6 @@ require_once __DIR__ . '/includes/temple-eyecatch.php';
 require_once __DIR__ . '/includes/sticky-cta.php';
 require_once __DIR__ . '/includes/header-nav-center.php';
 require_once __DIR__ . '/includes/corner-popup.php';
-require_once __DIR__ . '/includes/lp-with-chrome.php';
 
 /* =========================================================================
  * 1. 設定
