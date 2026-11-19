@@ -19,7 +19,7 @@ function ssa_corner_popup_pattern() {
             'btn' => 'お寺の借地を相談する', 'url' => '/otera-soudan/', 'sub' => null);
     }
     return array('key' => 'default', 'head' => '借地のご相談は無料です',
-        'text' => '地主との交渉から売却まで、借地の取引100件以上の担当がサポートします。',
+        'text' => '地主との交渉から売却まで、借地の相談500件以上の担当がサポートします。',
         'btn' => '無料で相談する', 'url' => '/contact-us/',
         'sub' => array('label' => 'お寺が地主の借地はこちら', 'url' => '/otera-shakuchi/'));
 }
