@@ -1,3 +1,10 @@
+/* GA4へ送る。GTMの無いサイトでは dataLayer に入れても記録されないので gtag を優先する */
+function ssaTrack(ev, params) {
+  try {
+    if (typeof window.gtag === 'function') window.gtag('event', ev, params || {});
+    else (window.dataLayer = window.dataLayer || []).push(Object.assign({ event: ev }, params || {}));
+  } catch (e) { /* 計測の失敗で画面を止めない */ }
+}
 /* 借地権の目安査定 — フォームの動き（1画面1問のステップ式・市区町村と町名の候補・送信・結果表示） */
 (function () {
   'use strict';
@@ -75,7 +82,7 @@
     if (top < 0 || top > window.innerHeight * 0.4) root.scrollIntoView({ block: 'start', behavior: 'smooth' });
     var first = $(root, '.ssa-step[data-step="' + n + '"] input:not([type=hidden]):not([tabindex="-1"]), .ssa-step[data-step="' + n + '"] select');
     if (first && n !== 1 && first.type !== 'radio') { try { first.focus({ preventScroll: true }); } catch (e) {} }
-    try { (window.dataLayer = window.dataLayer || []).push({ event: 'shakuchi_satei_step', satei_step: n }); } catch (e) {}
+    ssaTrack('shakuchi_satei_step', { satei_step: n });
   }
 
   // ステップごとの入力チェック（サーバー側でも同じ内容をもう一度確かめる）
@@ -138,7 +145,7 @@
     $(root, '.ssa-form').hidden = true;
     box.hidden = false;
     box.scrollIntoView({ block: 'start', behavior: 'smooth' });
-    try { (window.dataLayer = window.dataLayer || []).push({ event: 'shakuchi_satei_submit', satei_has_estimate: !!res.estimate }); } catch (e) {}
+    ssaTrack('shakuchi_satei_submit', { satei_has_estimate: !!res.estimate });
   }
 
   function init(root) {
